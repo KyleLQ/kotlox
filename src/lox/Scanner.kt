@@ -39,6 +39,8 @@ class Scanner (private val source: String) {
             '/' -> if (match('/')) {
                 // skip entire line if comment
                 while (peek() != '\n' && !isAtEnd()) advance()
+            } else if (match('*')) {
+                blockCommentAllowNesting()
             } else {
                 addToken(TokenType.SLASH)
             }
@@ -54,6 +56,52 @@ class Scanner (private val source: String) {
                     lox.error(line, "Unexpected character")
                 }
             }
+        }
+    }
+
+    // handles block comments
+    private fun blockComment() {
+        while (!isAtEnd() && !(peek() == '*' && peekNext() == '/')) {
+            if (peek() == '\n') {
+                line++
+            }
+            advance()
+        }
+        if (isAtEnd()) {
+            return lox.error(line, "Block comment was not closed!")
+        }
+        // consume the closing block comment */
+        advance()
+        advance()
+    }
+
+    // like above function, but allows nesting block comments
+    // e.g. /* /* ...*/*/
+    private fun blockCommentAllowNesting() {
+        var nestingLevel = 1
+        while (!isAtEnd() && nestingLevel > 0) {
+            if (peek() == '\n') {
+                line++
+            }
+
+            if (peek() == '*' && peekNext() == '/') {
+                nestingLevel--
+                advance()
+                advance()
+                continue
+            }
+
+            if (peek() == '/' && peekNext() == '*') {
+                nestingLevel++
+                advance()
+                advance()
+                continue
+            }
+
+            advance()
+        }
+        if (isAtEnd() && nestingLevel > 0) {
+            return lox.error(line, "Block comment was not closed!")
         }
     }
 
@@ -84,7 +132,7 @@ class Scanner (private val source: String) {
     // handle string literals
     private fun string() {
         while (peek() != '"' && !isAtEnd()) {
-            // allows multi-line comments
+            // allows multi-line strings
             if (peek() == '\n') line++
             advance()
         }
@@ -102,6 +150,8 @@ class Scanner (private val source: String) {
         addToken(TokenType.STRING, value)
     }
 
+    // returns true if current character matches expected.
+    // if it does match, ADVANCES current.
     private fun match(expected: Char): Boolean {
         if (isAtEnd()) return false
         if (source[current] != expected) return false
