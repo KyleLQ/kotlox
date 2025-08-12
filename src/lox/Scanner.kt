@@ -84,7 +84,7 @@ class Scanner (private val source: String) {
     // handle string literals
     private fun string() {
         while (peek() != '"' && !isAtEnd()) {
-            // allows multi-line comments
+            // allows multi-line strings
             if (peek() == '\n') line++
             advance()
         }
@@ -102,6 +102,8 @@ class Scanner (private val source: String) {
         addToken(TokenType.STRING, value)
     }
 
+    // checks if the current character matches expected.
+    // if it does match, ADVANCE current.
     private fun match(expected: Char): Boolean {
         if (isAtEnd()) return false
         if (source[current] != expected) return false
