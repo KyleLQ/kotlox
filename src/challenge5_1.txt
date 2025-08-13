@@ -1,0 +1,44 @@
+expr → expr ( "(" ( expr ( "," expr )* )? ")" | "." IDENTIFIER )+
+     | IDENTIFIER
+     | NUMBER
+
+
+Bonus: This grammar encodes either an identifier, number, or expr.IDENTIFIER or expr(expr, expr)
+So this grammar encodes an expression.
+
+
+????????
+expr -> expr ( "(" ( expr ( "," expr )* )? ")" | "." IDENTIFIER )+
+expr -> IDENTIFIER
+expr ->  NUMBER
+
+expr -> expr ( "(" ( expr ( "," expr )* )? ")" | "." IDENTIFIER )+
+
+a -> ( "(" ( expr ( "," expr )* )? ")" | "." IDENTIFIER )
+b -> ( "," expr )
+
+so a -> ( "(" ( expr b* )? ")" | "." IDENTIFIER )
+so expr -> a+
+???????
+
+=========================
+therefore:
+
+expr -> IDENTIFIER
+expr -> NUMBER
+expr -> expr dotcall
+
+dotcall  -> dot
+dotcall -> call
+dotcall -> dot dotcall
+dotcall -> call dotcall
+
+dot ->  "." IDENTIFIER
+
+call -> "("")"
+call -> "(" expr ")"
+call -> "(" expr fields ")"
+
+fields -> "," expr
+fields -> "," expr fields
+
