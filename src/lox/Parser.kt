@@ -4,6 +4,8 @@ package lox
  * Recursive descent parser
  */
 class Parser(private val tokens: List<Token>) {
+    private class ParseError: RuntimeException()
+
     private var current = 0
 
     private fun expression(): Expr {
@@ -100,6 +102,12 @@ class Parser(private val tokens: List<Token>) {
         return false
     }
 
+    // advances if current token type matches type. Else throws error
+    private fun consume(type: TokenType, messege: String): Token {
+        if (check(type)) return advance()
+        throw error(peek(), messege)
+    }
+
     // check if current token type matches type
     private fun check(type: TokenType): Boolean {
         if (isAtEnd()) return false
@@ -122,5 +130,32 @@ class Parser(private val tokens: List<Token>) {
 
     private fun previous(): Token {
         return tokens[current - 1]
+    }
+
+    private fun error(token: Token, message: String): ParseError {
+        lox.error(token, message)
+        return ParseError()
+    }
+
+    // provides panic mode synchronization. Discards tokens until it sees either
+    // a statement end or beginning. (doesn't perfectly handle all cases)
+    private fun synchronize() {
+        advance()
+
+        while (!isAtEnd()) {
+            if (previous().type == TokenType.SEMICOLON) return
+
+            when(peek().type) {
+                TokenType.CLASS,
+                TokenType.FUN,
+                TokenType.VAR,
+                TokenType.FOR,
+                TokenType.IF,
+                TokenType.WHILE,
+                TokenType.PRINT,
+                TokenType.RETURN -> return
+                else -> advance()
+            }
+        }
     }
 }
