@@ -1,0 +1,7 @@
+6.1:
+
+Comma operator evaluates left operand and discards result, then evaluates right operand and
+returns it. Lowest precedence, and is left associative.
+
+Grammar rule:
+comma_operator -> expression ("," expression)*

@@ -11,10 +11,19 @@ class Parser(private val tokens: List<Token>) {
     // returns a syntax tree, or null if there is a parse error
     fun parse(): Expr? {
         return try {
-            expression()
+            commaOperator()
         } catch(error: ParseError) {
             null
         }
+    }
+
+    private fun commaOperator(): Expr {
+        var expr = expression()
+        while (match(TokenType.COMMA)) {
+            expr = expression()
+        }
+
+        return expr
     }
 
     private fun expression(): Expr {
