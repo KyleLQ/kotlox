@@ -8,6 +8,15 @@ class Parser(private val tokens: List<Token>) {
 
     private var current = 0
 
+    // returns a syntax tree, or null if there is a parse error
+    fun parse(): Expr? {
+        return try {
+            expression()
+        } catch(error: ParseError) {
+            null
+        }
+    }
+
     private fun expression(): Expr {
         return equality()
     }
@@ -88,6 +97,8 @@ class Parser(private val tokens: List<Token>) {
             consume(TokenType.RIGHT_PAREN, "Expect \')\' after expression.")
             return Grouping(expr)
         }
+
+        throw error(peek(), "Expect expression.")
     }
 
     // if current token matches any of types, advance current pointer and return true
@@ -103,9 +114,9 @@ class Parser(private val tokens: List<Token>) {
     }
 
     // advances if current token type matches type. Else throws error
-    private fun consume(type: TokenType, messege: String): Token {
+    private fun consume(type: TokenType, message: String): Token {
         if (check(type)) return advance()
-        throw error(peek(), messege)
+        throw error(peek(), message)
     }
 
     // check if current token type matches type
