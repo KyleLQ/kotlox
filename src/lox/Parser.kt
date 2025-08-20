@@ -11,10 +11,27 @@ class Parser(private val tokens: List<Token>) {
     // returns a syntax tree, or null if there is a parse error
     fun parse(): Expr? {
         return try {
-            commaOperator()
+            ternaryOperator()
         } catch(error: ParseError) {
             null
         }
+    }
+
+    /**
+     Peek? doesn't make sense. Don't know how long expression will be ahead of time.
+     */
+    private fun ternaryOperator(): Expr {
+        var expr = commaOperator()
+
+        if (match(TokenType.QUESTION)) {
+            val leftOperator = previous()
+            val mid = commaOperator()
+            val rightOperator = consume(TokenType.COLON, "Incomplete ternary expression.")
+            val right = ternaryOperator()
+            expr = Ternary(expr, leftOperator, mid, rightOperator, right)
+        }
+
+        return expr
     }
 
     private fun commaOperator(): Expr {
@@ -102,7 +119,7 @@ class Parser(private val tokens: List<Token>) {
         }
 
         if (match(TokenType.LEFT_PAREN)) {
-            val expr = expression()
+            val expr = ternaryOperator()
             consume(TokenType.RIGHT_PAREN, "Expect \')\' after expression.")
             return Grouping(expr)
         }

@@ -18,7 +18,8 @@ fun main(args: Array<String>) {
         "Binary   ; val left: Expr, val operator: Token, val right: Expr",
         "Grouping ; val expression: Expr",
         "Literal  ; val value: Any?",
-        "Unary    ; val operator: Token, val right: Expr"
+        "Unary    ; val operator: Token, val right: Expr",
+        "Ternary  ; val left: Expr, val leftOperator: Token, val mid: Expr, val rightOperator: Token, val right: Expr"
     ))
 }
 

@@ -25,6 +25,13 @@ class AstPrinter: Visitor<String>{
         return parenthesize(expr.operator.lexeme, expr.right)
     }
 
+    override fun visitTernaryExpr(expr: Ternary): String {
+        return parenthesize(
+            expr.leftOperator.lexeme + expr.rightOperator.lexeme,
+            expr.left, expr.mid, expr.right
+        )
+    }
+
     private fun parenthesize(name: String, vararg exprs: Expr): String {
         val builder = StringBuilder()
         builder.append("($name")

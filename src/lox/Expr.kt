@@ -5,6 +5,7 @@ interface Visitor<R> {
     fun visitGroupingExpr(expr: Grouping): R
     fun visitLiteralExpr(expr: Literal): R
     fun visitUnaryExpr(expr: Unary): R
+    fun visitTernaryExpr(expr: Ternary): R
 }
 
 abstract class Expr {
@@ -32,6 +33,12 @@ class Literal(val value: Any?): Expr() {
 class Unary(val operator: Token, val right: Expr): Expr() {
     override fun <R> accept(visitor: Visitor<R>): R {
         return visitor.visitUnaryExpr(this)
+    }
+}
+
+class Ternary(val left: Expr, val leftOperator: Token, val mid: Expr, val rightOperator: Token, val right: Expr): Expr() {
+    override fun <R> accept(visitor: Visitor<R>): R {
+        return visitor.visitTernaryExpr(this)
     }
 }
 

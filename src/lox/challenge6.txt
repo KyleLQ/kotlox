@@ -5,3 +5,24 @@ returns it. Lowest precedence, and is left associative.
 
 Grammar rule:
 comma_operator -> expression ("," expression)*
+====================================================
+6.2:
+
+Ternary operator.
+
+a == b ? a : b ? c : d
+
+is right associative. ->
+a == b ? a : (b ? c : d).
+
+Since for a ? b : c,
+a, b, and c can all be expressions, it must allow expression precedence level.
+
+Grammar rule:
+ternary_operator -> (expression "?" expression ":")* expression
+
+alternatively, since right associativity, just use:
+
+ternary_operator -> expression "?" expression ":" ternary_operator | expression
+
+(actually replace expression with comma_operator)

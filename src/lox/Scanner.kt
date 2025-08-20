@@ -22,6 +22,8 @@ class Scanner (private val source: String) {
     private fun scanToken() {
         val c = advance()
         when(c) {
+            '?' -> addToken(TokenType.QUESTION)
+            ':' -> addToken(TokenType.COLON)
             '(' -> addToken(TokenType.LEFT_PAREN)
             ')' -> addToken(TokenType.RIGHT_PAREN)
             '{' -> addToken(TokenType.LEFT_BRACE)
