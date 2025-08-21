@@ -36,3 +36,23 @@ binary operators: equality, term, comparison, and factor.
 
 equality -> comparison (("!=" | "==") comparison)* |
             ("!=" | "==") comparison)
+
+=====================================
+Corrections:
+
+6.1:
+Comma precedence should be between expression and equality. Also,
+for the purpose of the syntax tree, you still want a binary node
+containing both operands of the comma operator.
+
+6.2
+Conditional precedence should be between expression and equality.
+Also note that each of the operands should have different precedence.
+The right operand is recursive, since right to left associativity.
+The left operand is equality, which is straightforward. The middle
+operand is actually expression. This is because we are copying c precedence
+rules. see:  https://en.cppreference.com/w/c/language/operator_precedence.html#cite_note-3
+
+6.3
+I think where I put the error productions works correctly, but
+you probably want them all in one place for organization purposes??
