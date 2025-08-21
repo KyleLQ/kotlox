@@ -26,3 +26,13 @@ alternatively, since right associativity, just use:
 ternary_operator -> expression "?" expression ":" ternary_operator | expression
 
 (actually replace expression with comma_operator)
+===========================================================
+6.3
+
+handle all binary operators appearing without a left hand operand. Report as error,
+but also parse and discard right hand operator with appropriate precedence.
+
+binary operators: equality, term, comparison, and factor.
+
+equality -> comparison (("!=" | "==") comparison)* |
+            ("!=" | "==") comparison)

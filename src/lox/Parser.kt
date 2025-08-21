@@ -49,6 +49,12 @@ class Parser(private val tokens: List<Token>) {
 
     // is left associative
     private fun equality(): Expr {
+        if (match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL)) {
+            val previous = previous()
+            comparison()
+            throw error(previous, "Expecting a left operand for ${previous.lexeme}")
+        }
+
         var expr = comparison()
 
         while (match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL)) {
@@ -62,6 +68,12 @@ class Parser(private val tokens: List<Token>) {
 
     // is left associative
     private fun comparison(): Expr {
+        if (match(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL)) {
+            val previous = previous()
+            term()
+            throw error(previous, "Expecting a left operand for ${previous.lexeme}")
+        }
+
         var expr = term()
 
         while (match(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL)) {
@@ -75,6 +87,12 @@ class Parser(private val tokens: List<Token>) {
 
     // is left associative
     private fun term(): Expr {
+        if (match(TokenType.PLUS)) {
+            val previous = previous()
+            factor()
+            throw error(previous, "Expecting a left operand for ${previous.lexeme}")
+        }
+
         var expr = factor()
 
         while (match(TokenType.MINUS, TokenType.PLUS)) {
@@ -88,6 +106,12 @@ class Parser(private val tokens: List<Token>) {
 
     // is left associative
     private fun factor(): Expr {
+        if (match(TokenType.SLASH, TokenType.STAR)) {
+            val previous = previous()
+            unary()
+            throw error(previous, "Expecting a left operand for ${previous.lexeme}")
+        }
+
         var expr = unary()
 
         while (match(TokenType.SLASH, TokenType.STAR)) {
