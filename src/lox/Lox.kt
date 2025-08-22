@@ -21,13 +21,17 @@ fun main(args: Array<String>) {
 }
 
 class Lox {
+    // TODO!!! DO I NEED THESE TO BE STATIC!?!
+    private val interpreter = Interpreter()
     var hadError: Boolean = false
+    var hadRuntimeError: Boolean = false
 
     fun runFile(path: String) {
         val bytes = Files.readAllBytes(Paths.get(path))
         run(String(bytes, Charset.defaultCharset()))
 
         if (hadError) exitProcess(65)
+        if (hadRuntimeError) exitProcess(70)
     }
 
     fun runPrompt() {
@@ -51,7 +55,7 @@ class Lox {
         // stop if there was a syntax error
         if (hadError) return
 
-        println(AstPrinter().print(expression!!)) // no chance of expression being null, since no error
+        interpreter.interpret(expression!!) // no chance of expression being null, since no error
     }
 
     // todo more detailed error reporting
@@ -70,5 +74,10 @@ class Lox {
         } else {
             report(token.line, "at \'${token.lexeme}\'", message)
         }
+    }
+
+    fun runtimeError(error: RuntimeError) {
+        println("${error.message} \n[line ${error.token.line}]")
+        hadRuntimeError = true
     }
 }
