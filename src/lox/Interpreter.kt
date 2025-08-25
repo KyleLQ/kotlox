@@ -54,11 +54,11 @@ class Interpreter: Visitor<Any?>{
                 if (left is String && right is String) {
                     return left + right
                 }
+
+                throw RuntimeError(expr.operator, "Operands must be two numbers or two strings.")
             }
             else -> return null // unreachable
         }
-
-        return null // unreachable
     }
 
     override fun visitGroupingExpr(expr: Grouping): Any? {
