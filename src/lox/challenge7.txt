@@ -1,0 +1,30 @@
+Challenge Chapter 7:
+=============================
+7.1
+
+Yes.
+Compare Booleans and Numbers. 0 = false, and non zero = true.
+This is the case in C and C++. We might want to add this for
+increased familiarity.
+
+Compare strings with each other based on lexicographic ordering.
+This is the case in pretty much every language I've used.
+
+Reasons not to: Javascript PTSD. Automatic type conversion
+can lead to bugs.
+
+---------------------------
+7.2
+
+see code
+============================
+7.3
+
+Right now, when dividing a number by zero, it uses the Kotlin default behavior for doubles,
+which gives infinity. In Java and Kotlin, it throws an exception for ints, but gives infinity for doubles.
+In Typescript and Dart, it always gives infinity. In Go, it throws an exception always.
+
+(Also for 0/0, Kotlin gives NaN. So another special case that we don't want to handle)
+
+I think for Lox, we should probably fail, since handling infinity as a special case might be too complicated
+for now.

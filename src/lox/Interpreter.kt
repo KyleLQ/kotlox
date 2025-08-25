@@ -40,6 +40,9 @@ class Interpreter: Visitor<Any?>{
             }
             TokenType.SLASH -> {
                 checkNumberOperands(expr.operator, left, right)
+                if (right == 0.0) {
+                    throw RuntimeError(expr.operator, "Cannot Divide by Zero")
+                }
                 return (left as Double) / (right as Double)
             }
             TokenType.STAR -> {
@@ -54,11 +57,15 @@ class Interpreter: Visitor<Any?>{
                 if (left is String && right is String) {
                     return left + right
                 }
+
+                if (left is String || right is String) {
+                    return stringify(left) + stringify(right)
+                }
+
+                throw RuntimeError(expr.operator, "Operands must be either two numbers, or at least one operand must be a string")
             }
             else -> return null // unreachable
         }
-
-        return null // unreachable
     }
 
     override fun visitGroupingExpr(expr: Grouping): Any? {
