@@ -20,6 +20,10 @@ fun main(args: Array<String>) {
         "Literal  ; val value: Any?",
         "Unary    ; val operator: Token, val right: Expr"
     ))
+    defineAst(outputDir, "Stmt", listOf(
+        "Expression ; val expression: Expr",
+        "Print ; val expression: Expr"
+    ))
 }
 
 // baseName = name of the base class that the classes in types inherit from
@@ -29,9 +33,9 @@ private fun defineAst(outputDir: String, baseName: String, types: List<String>) 
     val writer = PrintWriter(path, "UTF-8")
     writer.println("package lox")
     writer.println("")
-    defineVisitor(writer, baseName, types)
     writer.println("")
     writer.println("abstract class $baseName {")
+    defineVisitor(writer, baseName, types)
     writer.println("    abstract fun <R> accept(visitor: Visitor<R>): R")
     writer.println("}")
     writer.println("")
@@ -50,14 +54,14 @@ private fun defineVisitor(
     baseName: String,
     types: List<String>
 ) {
-    writer.println("interface Visitor<R> {")
+    writer.println("    interface Visitor<R> {")
 
     for (type in types) {
         val typeName = type.split(";")[0].trim()
-        writer.println("    fun visit${typeName}${baseName}(${baseName.lowercase()}: ${typeName}): R")
+        writer.println("        fun visit${typeName}${baseName}(${baseName.lowercase()}: ${typeName}): R")
     }
 
-    writer.println("}")
+    writer.println("    }")
 }
 
 private fun defineType(

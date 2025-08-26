@@ -3,7 +3,7 @@ package lox
 /**
  * Simple printing class that shows the nesting structure of a syntax tree, in lisp like syntax
  */
-class AstPrinter: Visitor<String>{
+class AstPrinter: Expr.Visitor<String>{
 
     fun print(expr: Expr): String {
         return expr.accept(this)

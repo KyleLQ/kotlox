@@ -1,11 +1,12 @@
 package lox
 
-class Interpreter: Visitor<Any?>{
+class Interpreter: Expr.Visitor<Any?>, Stmt.Visitor<Unit>{
 
-    fun interpret(expression: Expr) {
+    fun interpret(statements: List<Stmt>) {
         try {
-            val value = evaluate(expression)
-            println(stringify(value))
+            for (statement in statements) {
+                execute(statement)
+            }
         } catch (error: RuntimeError) {
             lox.runtimeError(error)
         }
@@ -125,5 +126,18 @@ class Interpreter: Visitor<Any?>{
 
     private fun evaluate(expr: Expr): Any? {
         return expr.accept(this)
+    }
+
+    private fun execute(stmt: Stmt) {
+        stmt.accept(this)
+    }
+
+    override fun visitExpressionStmt(stmt: Expression) {
+        evaluate(stmt.expression)
+    }
+
+    override fun visitPrintStmt(stmt: Print) {
+        val value = evaluate(stmt.expression)
+        println(stringify(value))
     }
 }

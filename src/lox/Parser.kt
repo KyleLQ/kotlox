@@ -8,17 +8,36 @@ class Parser(private val tokens: List<Token>) {
 
     private var current = 0
 
-    // returns a syntax tree, or null if there is a parse error
-    fun parse(): Expr? {
-        return try {
-            expression()
-        } catch(error: ParseError) {
-            null
+    // returns every statement until it hits the EOF token.
+    fun parse(): List<Stmt> {
+        val statements = mutableListOf<Stmt>()
+        while (!isAtEnd()) {
+            statements.add(statement())
         }
+
+        return statements
     }
 
     private fun expression(): Expr {
         return equality()
+    }
+
+    private fun statement(): Stmt {
+        if (match(TokenType.PRINT)) return printStatement()
+
+        return expressionStatement()
+    }
+
+    private fun printStatement(): Stmt {
+        val value = expression()
+        consume(TokenType.SEMICOLON, "Expect \';\' after value.")
+        return Print(value)
+    }
+
+    private fun expressionStatement(): Stmt {
+        val expr = expression()
+        consume(TokenType.SEMICOLON, "Expect \';\' after expression.")
+        return Expression(expr)
     }
 
     // is left associative

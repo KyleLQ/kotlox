@@ -1,13 +1,13 @@
 package lox
 
-interface Visitor<R> {
-    fun visitBinaryExpr(expr: Binary): R
-    fun visitGroupingExpr(expr: Grouping): R
-    fun visitLiteralExpr(expr: Literal): R
-    fun visitUnaryExpr(expr: Unary): R
-}
 
 abstract class Expr {
+    interface Visitor<R> {
+        fun visitBinaryExpr(expr: Binary): R
+        fun visitGroupingExpr(expr: Grouping): R
+        fun visitLiteralExpr(expr: Literal): R
+        fun visitUnaryExpr(expr: Unary): R
+    }
     abstract fun <R> accept(visitor: Visitor<R>): R
 }
 
