@@ -2,7 +2,9 @@ package lox
 
 class Interpreter: Expr.Visitor<Any?>, Stmt.Visitor<Unit>{
 
-    fun interpret(statements: List<Stmt>) {
+    private val environment = Environment()
+
+    fun interpret(statements: List<Stmt?>) {
         try {
             for (statement in statements) {
                 execute(statement)
@@ -83,6 +85,10 @@ class Interpreter: Expr.Visitor<Any?>, Stmt.Visitor<Unit>{
         }
     }
 
+    override fun visitVariableExpr(expr: Variable): Any? {
+        return environment.get(expr.name)
+    }
+
     private fun checkNumberOperand(operator: Token, operand: Any?) {
         if (operand is Double) return
         throw RuntimeError(operator, "Operand must be a number.")
@@ -128,8 +134,8 @@ class Interpreter: Expr.Visitor<Any?>, Stmt.Visitor<Unit>{
         return expr.accept(this)
     }
 
-    private fun execute(stmt: Stmt) {
-        stmt.accept(this)
+    private fun execute(stmt: Stmt?) {
+        stmt?.accept(this)
     }
 
     override fun visitExpressionStmt(stmt: Expression) {
@@ -139,5 +145,20 @@ class Interpreter: Expr.Visitor<Any?>, Stmt.Visitor<Unit>{
     override fun visitPrintStmt(stmt: Print) {
         val value = evaluate(stmt.expression)
         println(stringify(value))
+    }
+
+    override fun visitVarStmt(stmt: Var) {
+        var value: Any? = null
+        if (stmt.initializer != null) {
+            value = evaluate(stmt.initializer)
+        }
+
+        environment.define(stmt.name.lexeme, value)
+    }
+
+    override fun visitAssignExpr(expr: Assign): Any? {
+        val value = evaluate(expr.value)
+        environment.assign(expr.name, value)
+        return value
     }
 }
