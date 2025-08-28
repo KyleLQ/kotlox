@@ -1,0 +1,22 @@
+8.3:
+
+var a = 1;
+{
+  var a = a + 2;
+  print a;
+}
+
+Actual output:
+3
+
+Expected output:
+Idk, like fail or something. It is using the outer scope a to initialize the inner scope a's value.
+However, just from looking at it, it could be mistaken for using itself to initialize itself.
+I guess it makes sense for it to be allowed. But it could be confusing if the outer scope declaration
+is very far away from the inner scope declaration, so maybe there could be a warning or something.
+
+Output in Kotlin: 3
+Output in Go: 3
+Output in Typescript: Failed. "can't access lexical declaration 'a' before initialization"
+Output in C: 2
+
