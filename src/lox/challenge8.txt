@@ -20,3 +20,6 @@ Output in Go: 3
 Output in Typescript: Failed. "can't access lexical declaration 'a' before initialization"
 Output in C: 2
 
+====================
+For 8.1 there were better ways of doing it. Like making changes to parser and interpreter such that
+for REPL, you print the expression if you know it's an expression and there's only one.
