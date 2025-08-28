@@ -55,7 +55,7 @@ class Parser(private val tokens: List<Token>) {
         if (match(TokenType.PRINT)) return printStatement()
         if (match(TokenType.LEFT_BRACE)) return Block(block())
 
-        return expressionStatement()
+        return if (lox.isRepl) printStatement() else expressionStatement()
     }
 
     private fun printStatement(): Stmt {

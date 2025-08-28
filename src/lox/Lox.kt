@@ -25,6 +25,7 @@ class Lox {
     private val interpreter = Interpreter()
     var hadError: Boolean = false
     var hadRuntimeError: Boolean = false
+    var isRepl = false
 
     fun runFile(path: String) {
         val bytes = Files.readAllBytes(Paths.get(path))
@@ -37,6 +38,7 @@ class Lox {
     fun runPrompt() {
         val input = InputStreamReader(System.`in`)
         val reader = BufferedReader(input)
+        isRepl = true
 
         while (true) {
             print("> ")
