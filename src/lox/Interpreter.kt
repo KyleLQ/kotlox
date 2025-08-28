@@ -167,7 +167,7 @@ class Interpreter: Expr.Visitor<Any?>, Stmt.Visitor<Unit>{
     }
 
     override fun visitVarStmt(stmt: Var) {
-        var value: Any? = null
+        var value: Any? = Environment.UninitValue
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer)
         }

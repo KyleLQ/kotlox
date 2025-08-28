@@ -1,6 +1,9 @@
 package lox
 
 class Environment {
+    // value for variable if it has not been initialized or assigned
+    object UninitValue
+
     private val enclosing: Environment?
     private val values = mutableMapOf<String, Any?>()
 
@@ -18,7 +21,11 @@ class Environment {
 
     fun get(name: Token): Any? {
         if (values.contains(name.lexeme)) {
-            return values[name.lexeme]
+            val value = values[name.lexeme]
+            if (value == UninitValue) {
+                throw RuntimeError(name, "Variable ${name.lexeme} has not been initialized or assigned!")
+            }
+            return value
         }
 
         if (enclosing != null) return enclosing.get(name)
