@@ -1,7 +1,16 @@
 package lox
 
 class Environment {
+    private val enclosing: Environment?
     private val values = mutableMapOf<String, Any?>()
+
+    constructor() {
+        enclosing = null
+    }
+
+    constructor(enclosing: Environment) {
+        this.enclosing = enclosing
+    }
 
     fun define(name: String, value: Any?) {
         values[name] = value
@@ -12,12 +21,19 @@ class Environment {
             return values[name.lexeme]
         }
 
+        if (enclosing != null) return enclosing.get(name)
+
         throw RuntimeError(name, "Undefined variable ${name.lexeme}.")
     }
 
     fun assign(name: Token, value: Any?) {
         if (values.contains(name.lexeme)) {
             values[name.lexeme] = value
+            return
+        }
+
+        if (enclosing != null) {
+            enclosing.assign(name, value)
             return
         }
 
