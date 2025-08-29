@@ -25,6 +25,10 @@ class AstPrinter: Expr.Visitor<String>{
         return if (expr.value != null) "${expr.value}" else "nil"
     }
 
+    override fun visitLogicalExpr(expr: Logical): String {
+        TODO("Not yet implemented")
+    }
+
     override fun visitUnaryExpr(expr: Unary): String {
         return parenthesize(expr.operator.lexeme, expr.right)
     }
