@@ -76,12 +76,56 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun statement(): Stmt {
+        if (match(TokenType.FOR)) return forStatement()
         if (match(TokenType.IF)) return ifStatement()
         if (match(TokenType.PRINT)) return printStatement()
         if (match(TokenType.WHILE)) return whileStatement()
         if (match(TokenType.LEFT_BRACE)) return Block(block())
 
         return expressionStatement()
+    }
+
+    // this "desugars" the for loop into while loop AST nodes
+    private fun forStatement(): Stmt {
+        consume(TokenType.LEFT_PAREN, "Expect \'(\' after \'for\'.")
+
+        val initializer = if (match(TokenType.SEMICOLON)) {
+            null
+        } else if (match(TokenType.VAR)) {
+            varDeclaration()
+        } else {
+            expressionStatement()
+        }
+
+        var condition = if (!check(TokenType.SEMICOLON)) {
+            expression()
+        } else {
+            null
+        }
+        consume(TokenType.SEMICOLON, "Expect \';\' after loop condition.")
+
+        val increment = if (!check(TokenType.RIGHT_PAREN)) {
+            expression()
+        } else {
+            null
+        }
+        consume(TokenType.RIGHT_PAREN, "Expect \')\' after for clauses.")
+        var body = statement()
+
+        if (increment != null) {
+           body = Block(listOf(body, Expression(increment)))
+        }
+
+        if (condition == null) {
+            condition = Literal(true)
+        }
+        body = While(condition, body)
+
+        if (initializer != null) {
+            body = Block(listOf(initializer, body))
+        }
+
+        return body
     }
 
     private fun ifStatement(): Stmt {
