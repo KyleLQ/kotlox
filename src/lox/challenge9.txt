@@ -1,0 +1,14 @@
+Challenge 9
+======================
+9.1
+
+Conditional execution can be implemented using dynamic dispatch, with polymorphism. (Java)
+
+Or: instead of branching statements, just call a variable, which holds a function value that is determined
+at runtime.
+------------------------------
+9.2
+
+Recursion. Optimization = tail call, so you avoid overflowing the stack.
+-------------------------------
+9.3
