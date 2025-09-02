@@ -2,8 +2,25 @@ package lox
 
 class Interpreter: Expr.Visitor<Any?>, Stmt.Visitor<Unit>{
 
-    // the current environment (corresponding to the innermost scope of code being executed)
-    private var environment = Environment()
+    val globals = Environment() // the global environment
+    private var environment = globals // the current environment (corresponding to the innermost scope of code being executed)
+
+    init {
+        // define native functions in global scope
+        globals.define("clock", object: LoxCallable {
+            override fun arity(): Int {
+                return 0
+            }
+
+            override fun call(interpreter: Interpreter, arguments: List<Any?>): Any {
+                return (System.currentTimeMillis() / 1000.0)
+            }
+
+            override fun toString(): String {
+                return "<native fn>"
+            }
+        })
+    }
 
     fun interpret(statements: List<Stmt?>) {
         try {
@@ -175,7 +192,7 @@ class Interpreter: Expr.Visitor<Any?>, Stmt.Visitor<Unit>{
         stmt?.accept(this)
     }
 
-    private fun executeBlock(statements: List<Stmt?>, environment: Environment) {
+    fun executeBlock(statements: List<Stmt?>, environment: Environment) {
         val previous = this.environment
 
         try {
@@ -195,6 +212,11 @@ class Interpreter: Expr.Visitor<Any?>, Stmt.Visitor<Unit>{
 
     override fun visitExpressionStmt(stmt: Expression) {
         evaluate(stmt.expression)
+    }
+
+    override fun visitFunctionStmt(stmt: Function) {
+        val function = LoxFunction(stmt)
+        environment.define(stmt.name.lexeme, function)
     }
 
     override fun visitIfStmt(stmt: If) {

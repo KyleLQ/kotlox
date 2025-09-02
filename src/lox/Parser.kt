@@ -66,6 +66,7 @@ class Parser(private val tokens: List<Token>) {
 
     private fun declaration(): Stmt? {
         try {
+            if (match(TokenType.FUN)) return function("function")
             if (match(TokenType.VAR)) return varDeclaration()
 
             return statement()
@@ -174,6 +175,26 @@ class Parser(private val tokens: List<Token>) {
         val expr = expression()
         consume(TokenType.SEMICOLON, "Expect \';\' after expression.")
         return Expression(expr)
+    }
+
+    private fun function(kind: String): Function {
+        val name = consume(TokenType.IDENTIFIER, "Expect $kind name.")
+        consume(TokenType.LEFT_PAREN, "Expect \'(\' after $kind name.")
+        val parameters = mutableListOf<Token>()
+        if (!check(TokenType.RIGHT_PAREN)) {
+            do {
+                if (parameters.size >= 255) {
+                    error(peek(), "Can't have more than 255 parameters.")
+                }
+
+                parameters.add(consume(TokenType.IDENTIFIER, "Expect parameter name."))
+            } while (match(TokenType.COMMA))
+        }
+        consume(TokenType.RIGHT_PAREN, "Expect \')\' after parameters.")
+
+        consume(TokenType.LEFT_BRACE, "Expect \'{\' before $kind body.")
+        val body = block()
+        return Function(name, parameters, body)
     }
 
     private fun block(): List<Stmt?> {
