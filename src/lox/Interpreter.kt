@@ -215,7 +215,7 @@ class Interpreter: Expr.Visitor<Any?>, Stmt.Visitor<Unit>{
     }
 
     override fun visitFunctionStmt(stmt: Function) {
-        val function = LoxFunction(stmt)
+        val function = LoxFunction(stmt, environment)
         environment.define(stmt.name.lexeme, function)
     }
 
@@ -230,6 +230,16 @@ class Interpreter: Expr.Visitor<Any?>, Stmt.Visitor<Unit>{
     override fun visitPrintStmt(stmt: Print) {
         val value = evaluate(stmt.expression)
         println(stringify(value))
+    }
+
+    override fun visitReturnStmt(stmt: Return) {
+        val value = if (stmt.value != null) {
+            evaluate(stmt.value)
+        } else {
+            null
+        }
+
+        throw ReturnException(value)
     }
 
     override fun visitVarStmt(stmt: Var) {
