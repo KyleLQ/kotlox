@@ -4,6 +4,7 @@ class Interpreter: Expr.Visitor<Any?>, Stmt.Visitor<Unit>{
 
     val globals = Environment() // the global environment
     private var environment = globals // the current environment (corresponding to the innermost scope of code being executed)
+    private val locals = mutableMapOf<Expr, Int>() // stores resolution information from semantic analysis
 
     init {
         // define native functions in global scope
@@ -140,7 +141,16 @@ class Interpreter: Expr.Visitor<Any?>, Stmt.Visitor<Unit>{
     }
 
     override fun visitVariableExpr(expr: Variable): Any? {
-        return environment.get(expr.name)
+        return lookUpVariable(expr.name, expr)
+    }
+
+    private fun lookUpVariable(name: Token, expr: Expr): Any? {
+        val distance = locals[expr]
+        return if (distance != null) { // use resolved distance for local variables
+            environment.getAt(distance, name.lexeme)
+        } else { // lookup dynamically for global variables
+            globals.get(name)
+        }
     }
 
     private fun checkNumberOperand(operator: Token, operand: Any?) {
@@ -190,6 +200,10 @@ class Interpreter: Expr.Visitor<Any?>, Stmt.Visitor<Unit>{
 
     private fun execute(stmt: Stmt?) {
         stmt?.accept(this)
+    }
+
+    fun resolve(expr: Expr, depth: Int) {
+        locals[expr] = depth
     }
 
     fun executeBlock(statements: List<Stmt?>, environment: Environment) {

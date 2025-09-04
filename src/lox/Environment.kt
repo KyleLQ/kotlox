@@ -16,6 +16,23 @@ class Environment {
         values[name] = value
     }
 
+    // walks distance amount up the chain of environments.
+    // ASSUMES that the distance was correctly resolved.
+    fun ancestor(distance: Int): Environment {
+        var environment = this
+        for (i in 0 ..< distance) {
+            environment = environment.enclosing!!
+        }
+
+        return environment
+    }
+
+    // walks a set distance instead of dynamically walking up the chain
+    // of environments
+    fun getAt(distance: Int, name: String): Any? {
+        return ancestor(distance).values[name]
+    }
+
     fun get(name: Token): Any? {
         if (values.contains(name.lexeme)) {
             return values[name.lexeme]
