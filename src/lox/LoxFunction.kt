@@ -2,7 +2,8 @@ package lox
 
 class LoxFunction(
     private val declaration: Function,
-    private val closure: Environment
+    private val closure: Environment,
+    private val isInitializer: Boolean
 ): LoxCallable{
     override fun arity(): Int {
         return declaration.params.size
@@ -11,7 +12,7 @@ class LoxFunction(
     fun bind(instance: LoxInstance): LoxFunction {
         val environment = Environment(closure)
         environment.define("this", instance)
-        return LoxFunction(declaration, environment)
+        return LoxFunction(declaration, environment, isInitializer)
     }
 
     override fun call(interpreter: Interpreter, arguments: List<Any?>): Any? {
@@ -23,8 +24,12 @@ class LoxFunction(
         try {
             interpreter.executeBlock(declaration.body, environment)
         } catch(returnValue: ReturnException) {
+            if (isInitializer) return closure.getAt(0, "this")
+
             return returnValue.value
         }
+
+        if (isInitializer) return closure.getAt(0, "this")
         return null
     }
 

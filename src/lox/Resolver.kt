@@ -10,13 +10,20 @@ class Resolver(private val interpreter: Interpreter): Expr.Visitor<Unit>, Stmt.V
     private enum class FunctionType {
         NONE,
         FUNCTION,
+        INITIALIZER,
         METHOD
+    }
+
+    private enum class ClassType {
+        NONE,
+        CLASS
     }
 
     // tracks local block scopes only. Global scope variables at top level are not tracked here.
     // The Boolean represents whether the variable initializer has been resolved.
     private val scopes = Stack<MutableMap<String, Boolean>>()
     private var currentFunction = FunctionType.NONE
+    private var currentClass = ClassType.NONE
 
     override fun visitBlockStmt(stmt: Block) {
         beginScope()
@@ -25,6 +32,9 @@ class Resolver(private val interpreter: Interpreter): Expr.Visitor<Unit>, Stmt.V
     }
 
     override fun visitClassStmt(stmt: Class) {
+        val enclosingClass = currentClass
+        currentClass = ClassType.CLASS
+
         declare(stmt.name)
         define(stmt.name)
 
@@ -32,11 +42,16 @@ class Resolver(private val interpreter: Interpreter): Expr.Visitor<Unit>, Stmt.V
         scopes.peek()["this"] = true
 
         for (method in stmt.methods) {
-            val declaration = FunctionType.METHOD
+            var declaration = FunctionType.METHOD
+            if (method.name.lexeme == "init") {
+                declaration = FunctionType.INITIALIZER
+            }
             resolveFunction(method, declaration)
         }
 
         endScope()
+
+        currentClass = enclosingClass
     }
 
     override fun visitExpressionStmt(stmt: Expression) {
@@ -67,6 +82,9 @@ class Resolver(private val interpreter: Interpreter): Expr.Visitor<Unit>, Stmt.V
         }
 
         if (stmt.value != null) {
+            if (currentFunction == FunctionType.INITIALIZER) {
+                lox.error(stmt.keyword, "Can't return a value from an initializer.")
+            }
             resolve(stmt.value)
         }
     }
@@ -124,6 +142,11 @@ class Resolver(private val interpreter: Interpreter): Expr.Visitor<Unit>, Stmt.V
     }
 
     override fun visitThisExpr(expr: This) {
+        if (currentClass == ClassType.NONE) {
+            lox.error(expr.keyword, "Can't use \'this\' outside of a class.")
+            return
+        }
+
         resolveLocal(expr, expr.keyword)
     }
 
