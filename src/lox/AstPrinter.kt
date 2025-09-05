@@ -21,6 +21,10 @@ class AstPrinter: Expr.Visitor<String>{
         TODO("Not yet implemented")
     }
 
+    override fun visitGetExpr(expr: Get): String {
+        TODO("Not yet implemented")
+    }
+
     override fun visitGroupingExpr(expr: Grouping): String {
         return parenthesize("GROUPING", expr.expression)
     }
@@ -30,6 +34,14 @@ class AstPrinter: Expr.Visitor<String>{
     }
 
     override fun visitLogicalExpr(expr: Logical): String {
+        TODO("Not yet implemented")
+    }
+
+    override fun visitSetExpr(expr: Set): String {
+        TODO("Not yet implemented")
+    }
+
+    override fun visitThisExpr(expr: This): String {
         TODO("Not yet implemented")
     }
 

@@ -2,10 +2,15 @@ package lox
 
 import java.util.*
 
+// resolver pass that happens between parser and interpreter.
+// main purpose is to keep track of the number of environments
+// between the current scope and the scope where the variable
+// is declared.
 class Resolver(private val interpreter: Interpreter): Expr.Visitor<Unit>, Stmt.Visitor<Unit>{
     private enum class FunctionType {
         NONE,
-        FUNCTION
+        FUNCTION,
+        METHOD
     }
 
     // tracks local block scopes only. Global scope variables at top level are not tracked here.
@@ -16,6 +21,21 @@ class Resolver(private val interpreter: Interpreter): Expr.Visitor<Unit>, Stmt.V
     override fun visitBlockStmt(stmt: Block) {
         beginScope()
         resolve(stmt.statements)
+        endScope()
+    }
+
+    override fun visitClassStmt(stmt: Class) {
+        declare(stmt.name)
+        define(stmt.name)
+
+        beginScope()
+        scopes.peek()["this"] = true
+
+        for (method in stmt.methods) {
+            val declaration = FunctionType.METHOD
+            resolveFunction(method, declaration)
+        }
+
         endScope()
     }
 
@@ -82,6 +102,10 @@ class Resolver(private val interpreter: Interpreter): Expr.Visitor<Unit>, Stmt.V
         }
     }
 
+    override fun visitGetExpr(expr: Get) {
+        resolve(expr.obj)
+    }
+
     override fun visitGroupingExpr(expr: Grouping) {
         resolve(expr.expression)
     }
@@ -92,6 +116,15 @@ class Resolver(private val interpreter: Interpreter): Expr.Visitor<Unit>, Stmt.V
     override fun visitLogicalExpr(expr: Logical) {
         resolve(expr.left)
         resolve(expr.right)
+    }
+
+    override fun visitSetExpr(expr: Set) {
+        resolve(expr.value)
+        resolve(expr.obj)
+    }
+
+    override fun visitThisExpr(expr: This) {
+        resolveLocal(expr, expr.keyword)
     }
 
     override fun visitUnaryExpr(expr: Unary) {

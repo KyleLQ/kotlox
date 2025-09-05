@@ -104,6 +104,15 @@ class Interpreter: Expr.Visitor<Any?>, Stmt.Visitor<Unit>{
         return function.call(this, arguments)
     }
 
+    override fun visitGetExpr(expr: Get): Any? {
+        val obj = evaluate(expr.obj)
+        if (obj is LoxInstance) {
+            return obj.get(expr.name)
+        }
+
+        throw RuntimeError(expr.name, "Only instances have properties.")
+    }
+
     override fun visitGroupingExpr(expr: Grouping): Any? {
         return evaluate(expr.expression)
     }
@@ -125,6 +134,22 @@ class Interpreter: Expr.Visitor<Any?>, Stmt.Visitor<Unit>{
         }
 
         return evaluate(expr.right)
+    }
+
+    override fun visitSetExpr(expr: Set): Any? {
+        val obj = evaluate(expr.obj)
+
+        if(obj !is LoxInstance) {
+            throw RuntimeError(expr.name, "Only instances have fields.")
+        }
+
+        val value = evaluate(expr.value)
+        obj.set(expr.name, value)
+        return value
+    }
+
+    override fun visitThisExpr(expr: This): Any? {
+        return lookUpVariable(expr.keyword, expr)
     }
 
     override fun visitUnaryExpr(expr: Unary): Any? {
@@ -222,6 +247,19 @@ class Interpreter: Expr.Visitor<Any?>, Stmt.Visitor<Unit>{
 
     override fun visitBlockStmt(stmt: Block) {
         executeBlock(stmt.statements, Environment(environment))
+    }
+
+    override fun visitClassStmt(stmt: Class) {
+        environment.define(stmt.name.lexeme, null)
+
+        val methods = mutableMapOf<String,LoxFunction>()
+        for (method in stmt.methods) {
+            val function = LoxFunction(method, environment)
+            methods[method.name.lexeme] = function
+        }
+
+        val klass = LoxClass(stmt.name.lexeme, methods)
+        environment.assign(stmt.name, klass)
     }
 
     override fun visitExpressionStmt(stmt: Expression) {

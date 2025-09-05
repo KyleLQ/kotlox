@@ -32,6 +32,9 @@ class Parser(private val tokens: List<Token>) {
             if (expr is Variable) {
                 val name = expr.name
                 return Assign(name, value)
+            } else if (expr is Get) {
+                val get = expr
+                return Set(get.obj, get.name, value)
             }
 
             error(equals, "Invalid assignment target")
@@ -66,6 +69,7 @@ class Parser(private val tokens: List<Token>) {
 
     private fun declaration(): Stmt? {
         try {
+            if (match(TokenType.CLASS)) return classDeclaration()
             if (match(TokenType.FUN)) return function("function")
             if (match(TokenType.VAR)) return varDeclaration()
 
@@ -74,6 +78,20 @@ class Parser(private val tokens: List<Token>) {
             synchronize()
             return null
         }
+    }
+
+    private fun classDeclaration(): Stmt {
+        val name = consume(TokenType.IDENTIFIER, "Expect Class name.")
+        consume(TokenType.LEFT_BRACE, "Expect \'{\' before class body.")
+
+        val methods = mutableListOf<Function>()
+        while (!check(TokenType.RIGHT_BRACE) && !isAtEnd()) {
+            methods.add(function("method"))
+        }
+
+        consume(TokenType.RIGHT_BRACE, "Expect \'}\' after class body.")
+
+        return Class(name, methods)
     }
 
     private fun statement(): Stmt {
@@ -289,6 +307,9 @@ class Parser(private val tokens: List<Token>) {
         while (true) {
             if (match(TokenType.LEFT_PAREN)) {
                 expr = finishCall(expr)
+            } else if (match(TokenType.DOT)) {
+                val name = consume(TokenType.IDENTIFIER, "Expect property name after \'.\'.")
+                expr = Get(expr,name)
             } else {
                 break
             }
@@ -323,6 +344,10 @@ class Parser(private val tokens: List<Token>) {
 
         if (match(TokenType.NUMBER, TokenType.STRING)) {
             return Literal(previous().literal)
+        }
+
+        if (match(TokenType.THIS)) {
+            return This(previous())
         }
 
         if (match(TokenType.IDENTIFIER)) {
