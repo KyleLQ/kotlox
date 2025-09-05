@@ -55,6 +55,12 @@ class Lox {
         // stop if there was a syntax error
         if (hadError) return
 
+        val resolver = Resolver(interpreter)
+        resolver.resolve(statements)
+
+        // stop if there was a resolution error.
+        if (hadError) return
+
         interpreter.interpret(statements)
     }
 

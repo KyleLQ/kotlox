@@ -33,6 +33,12 @@ class Environment {
         return ancestor(distance).values[name]
     }
 
+    // walks a set distance up the environment chain to assign
+    // the variable
+    fun assignAt(distance: Int, name: Token, value: Any?) {
+        ancestor(distance).values[name.lexeme] = value
+    }
+
     fun get(name: Token): Any? {
         if (values.contains(name.lexeme)) {
             return values[name.lexeme]

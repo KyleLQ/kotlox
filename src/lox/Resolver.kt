@@ -3,9 +3,15 @@ package lox
 import java.util.*
 
 class Resolver(private val interpreter: Interpreter): Expr.Visitor<Unit>, Stmt.Visitor<Unit>{
+    private enum class FunctionType {
+        NONE,
+        FUNCTION
+    }
+
     // tracks local block scopes only. Global scope variables at top level are not tracked here.
     // The Boolean represents whether the variable initializer has been resolved.
     private val scopes = Stack<MutableMap<String, Boolean>>()
+    private var currentFunction = FunctionType.NONE
 
     override fun visitBlockStmt(stmt: Block) {
         beginScope()
@@ -22,7 +28,7 @@ class Resolver(private val interpreter: Interpreter): Expr.Visitor<Unit>, Stmt.V
         declare(stmt.name)
         define(stmt.name)
 
-        resolveFunction(stmt)
+        resolveFunction(stmt, FunctionType.FUNCTION)
     }
 
     override fun visitIfStmt(stmt: If) {
@@ -36,6 +42,10 @@ class Resolver(private val interpreter: Interpreter): Expr.Visitor<Unit>, Stmt.V
     }
 
     override fun visitReturnStmt(stmt: Return) {
+        if (currentFunction == FunctionType.NONE) {
+            lox.error(stmt.keyword, "Can't return from top-level code.")
+        }
+
         if (stmt.value != null) {
             resolve(stmt.value)
         }
@@ -110,7 +120,10 @@ class Resolver(private val interpreter: Interpreter): Expr.Visitor<Unit>, Stmt.V
         expr.accept(this)
     }
 
-    private fun resolveFunction(function: Function) {
+    private fun resolveFunction(function: Function, type: FunctionType) {
+        val enclosingFunction = currentFunction
+        currentFunction = type
+
         beginScope()
         for (param in function.params) {
             declare(param)
@@ -118,6 +131,7 @@ class Resolver(private val interpreter: Interpreter): Expr.Visitor<Unit>, Stmt.V
         }
         resolve(function.body)
         endScope()
+        currentFunction = enclosingFunction
     }
 
     private fun beginScope() {
@@ -134,6 +148,10 @@ class Resolver(private val interpreter: Interpreter): Expr.Visitor<Unit>, Stmt.V
         if (scopes.isEmpty()) return
 
         val scope = scopes.peek()
+        if (scope.containsKey(name.lexeme)) {
+            lox.error(name, "Already a variable with this name in this scope.")
+        }
+
         scope[name.lexeme] = false
     }
 
