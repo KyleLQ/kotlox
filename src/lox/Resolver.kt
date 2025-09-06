@@ -16,7 +16,8 @@ class Resolver(private val interpreter: Interpreter): Expr.Visitor<Unit>, Stmt.V
 
     private enum class ClassType {
         NONE,
-        CLASS
+        CLASS,
+        SUBCLASS
     }
 
     // tracks local block scopes only. Global scope variables at top level are not tracked here.
@@ -38,6 +39,22 @@ class Resolver(private val interpreter: Interpreter): Expr.Visitor<Unit>, Stmt.V
         declare(stmt.name)
         define(stmt.name)
 
+        // check for cycles in the inheritance chain.
+        if (stmt.superclass != null &&
+            stmt.name.lexeme == stmt.superclass.name.lexeme) {
+            lox.error(stmt.superclass.name, "A class can't inherit from itself.")
+        }
+
+        if (stmt.superclass != null) {
+            currentClass = ClassType.SUBCLASS
+            resolve(stmt.superclass)
+        }
+
+        if(stmt.superclass != null) {
+            beginScope()
+            scopes.peek()["super"] = true
+        }
+
         beginScope()
         scopes.peek()["this"] = true
 
@@ -50,6 +67,8 @@ class Resolver(private val interpreter: Interpreter): Expr.Visitor<Unit>, Stmt.V
         }
 
         endScope()
+
+        if (stmt.superclass != null) endScope()
 
         currentClass = enclosingClass
     }
@@ -139,6 +158,17 @@ class Resolver(private val interpreter: Interpreter): Expr.Visitor<Unit>, Stmt.V
     override fun visitSetExpr(expr: Set) {
         resolve(expr.value)
         resolve(expr.obj)
+    }
+
+    override fun visitSuperExpr(expr: Super) {
+        if (currentClass == ClassType.NONE) {
+            lox.error(expr.keyword, "Can't use \'super\' outside of a class.")
+        } else if (currentClass != ClassType.SUBCLASS) {
+            lox.error(expr.keyword,
+                "Can't use \'super\' in a class with no superclass.")
+        }
+
+        resolveLocal(expr, expr.keyword)
     }
 
     override fun visitThisExpr(expr: This) {

@@ -1,7 +1,7 @@
 package lox
 
 class Environment {
-    private val enclosing: Environment?
+    val enclosing: Environment?
     private val values = mutableMapOf<String, Any?>()
 
     constructor() {
